@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 生成データ・学習結果は再現可能なため管理外（コードとmdだけを管理する）
+data/*
+outputs/*
+!data/.gitkeep
+!outputs/.gitkeep
+
+# 学習済み重み・入出庫DB
+*.pt
+*.pth
+*.sqlite
+*.db
