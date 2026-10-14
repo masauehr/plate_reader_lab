@@ -37,17 +37,19 @@
 
 ## 現状と使い方
 
-**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）・Phase4（ルール補正・確信度・要確認）・Phase5（入出庫シミュレーション）完了。** 以降は [PLAN.md](PLAN.md) の Phase6（評価・検証レポート）から。
+**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）・Phase4（ルール補正・確信度・要確認）・Phase5（入出庫シミュレーション）・Phase6（評価・検証レポート、最終評価）完了。** 発展の Phase7（VLMとの比較）は未実施。**最終レポートは [REPORT.md](REPORT.md)**。
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（65件）
+.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（66件）
 .venv/bin/python src/make_eval_sets.py             # 評価セット4,500枚を data/eval/ に生成（約45秒）
 .venv/bin/python src/eval_baseline.py             # 古典的ベースラインの評価（約20秒）→ outputs/baseline/
 .venv/bin/python src/train_detector.py --model resnet18 --epochs 20   # 検出器の学習（約9分。run_phase2.shで本実験を一括）
 .venv/bin/python src/train_ocr.py                                    # OCR(CRNN+CTC)の学習（約10分。run_phase3.shで本実験を一括。先に検出器が必要）
 .venv/bin/python src/make_eval_sets.py --val 0 --test 0 --cal 1000   # 較正セット（しきい値決定用）を追加で作る
 .venv/bin/python src/eval_phase4.py                  # 書式検査・確信度・振り分けの評価（約1分。先にPhase2・3の学習が必要）
+.venv/bin/python src/eval_report.py                    # 検証レポート（混同行列・劣化要因アブレーション・失敗例。約7分）→ outputs/report/
+.venv/bin/python src/final_eval.py                     # 最終評価の予行演習（val）。test は --split test --confirm-final（1回だけ・実施済み）
 .venv/bin/python src/run_phase5.py                     # 入出庫シミュレーション（約15分。先にPhase2〜4が必要）→ outputs/sim/
 .venv/bin/jupyter lab notebooks/                   # 解説付きNotebook（カーネル: Python (plate_reader_lab)）
 ```
@@ -67,6 +69,7 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 | [03_ocr_crnn](notebooks/03_ocr_crnn.ipynb) | Phase3: 「例から読み方を学ぶAI」(CRNN+CTC)。板を1行にする、CTCの仕組みと「位置は対応しない」発見、四隅の誤差の混ぜ方、分布シフト、読み間違いの分析、確信度の予告、左右反転がダメな理由 |
 | [04_rules_confidence](notebooks/04_rules_confidence.ipynb) | Phase4: AIは間違える前提で作る。書式検査（弾く）・補正（効果ほぼゼロ）・確信度4通り・自動処理／要確認／読み取り不可の振り分け・カバレッジ曲線・しきい値の決め方（データ量・コスト）・残る誤り |
 | [05_parking_system](notebooks/05_parking_system.ipynb) | Phase5: AIを「システム」の一部品にする。SQLite・料金・照合方針4通り・似たナンバーの世界・誤課金と二次被害・人手の内訳・損益分岐（誤課金の重さ） |
+| [06_final_report](notebooks/06_final_report.ipynb) | Phase6: プロジェクトの総括。最終評価(test)、混同行列、劣化要因アブレーション（運用できる範囲）、失敗例、学び、限界 |
 
 - カーネルが無い場合: `.venv/bin/python -m ipykernel install --user --name plate_reader_lab --display-name "Python (plate_reader_lab)"`
 - 日本語フォントは macOS 標準のヒラギノ角ゴシックを使う（環境変数 `PLATE_FONT` で変更可）。
@@ -88,6 +91,7 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 
 | ファイル | 内容 |
 |---|---|
+| **[REPORT.md](REPORT.md)** | **最終レポート**（最終評価の結果、主要な発見、運用できる範囲、限界、再現手順） |
 | [PLAN.md](PLAN.md) | フェーズ計画・進捗・未決事項 |
 | [MANUAL.md](MANUAL.md) | 設計（プレートの簡略仕様、パイプラインの詳細、各工程の手法と判断） |
 | [DATA_SPEC.md](DATA_SPEC.md) | 合成データの仕様（文字・色・背景・劣化・難易度・正解ラベル） |
@@ -98,7 +102,8 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 
 ```
 plate_reader_lab/
-├── README.md / CLAUDE.md / PLAN.md / MANUAL.md / DATA_SPEC.md / EVALUATION.md
+├── README.md / REPORT.md / CLAUDE.md / PLAN.md / MANUAL.md / DATA_SPEC.md / EVALUATION.md
+├── report_images/       # 最終レポートの図
 ├── plate-reader-lab.md   # pc_docs運用マニュアルのコピー
 ├── requirements.txt
 ├── data/        # 生成した評価セット（git管理外。`make_eval_sets.py` で再生成できる）
