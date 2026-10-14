@@ -37,17 +37,19 @@
 
 ## 現状と使い方
 
-**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）・Phase4（ルール補正・確信度・要確認）・Phase5（入出庫シミュレーション）・Phase6（評価・検証レポート、最終評価）完了。** 発展の Phase7（VLMとの比較）は未実施。**最終レポートは [REPORT.md](REPORT.md)**。
+**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）・Phase4（ルール補正・確信度・要確認）・Phase5（入出庫シミュレーション）・Phase6（評価・検証レポート、最終評価）完了。** **発展の Phase7（学習なしのVLMとの比較）も完了。** **最終レポートは [REPORT.md](REPORT.md)**。
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（66件）
+.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（74件）
 .venv/bin/python src/make_eval_sets.py             # 評価セット4,500枚を data/eval/ に生成（約45秒）
 .venv/bin/python src/eval_baseline.py             # 古典的ベースラインの評価（約20秒）→ outputs/baseline/
 .venv/bin/python src/train_detector.py --model resnet18 --epochs 20   # 検出器の学習（約9分。run_phase2.shで本実験を一括）
 .venv/bin/python src/train_ocr.py                                    # OCR(CRNN+CTC)の学習（約10分。run_phase3.shで本実験を一括。先に検出器が必要）
 .venv/bin/python src/make_eval_sets.py --val 0 --test 0 --cal 1000   # 較正セット（しきい値決定用）を追加で作る
 .venv/bin/python src/eval_phase4.py                  # 書式検査・確信度・振り分けの評価（約1分。先にPhase2・3の学習が必要）
+.venv/bin/python src/run_phase7.py ask --split test2 --n 60 --models ollama:qwen3.8:27b-mlx --prompts format   # VLMに読ませる（合成画像のみ。claude: は画像が外部に送信される）
+.venv/bin/python src/run_phase7.py report --split test2 --n 60 --models ollama:qwen3.8:27b-mlx claude:sonnet --prompts format   # 自作との比較 → outputs/vlm/
 .venv/bin/python src/eval_report.py                    # 検証レポート（混同行列・劣化要因アブレーション・失敗例。約7分）→ outputs/report/
 .venv/bin/python src/final_eval.py                     # 最終評価の予行演習（val）。test は --split test --confirm-final（1回だけ・実施済み）
 .venv/bin/python src/run_phase5.py                     # 入出庫シミュレーション（約15分。先にPhase2〜4が必要）→ outputs/sim/
@@ -70,6 +72,7 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 | [04_rules_confidence](notebooks/04_rules_confidence.ipynb) | Phase4: AIは間違える前提で作る。書式検査（弾く）・補正（効果ほぼゼロ）・確信度4通り・自動処理／要確認／読み取り不可の振り分け・カバレッジ曲線・しきい値の決め方（データ量・コスト）・残る誤り |
 | [05_parking_system](notebooks/05_parking_system.ipynb) | Phase5: AIを「システム」の一部品にする。SQLite・料金・照合方針4通り・似たナンバーの世界・誤課金と二次被害・人手の内訳・損益分岐（誤課金の重さ） |
 | [06_final_report](notebooks/06_final_report.ipynb) | Phase6: プロジェクトの総括。最終評価(test)、混同行列、劣化要因アブレーション（運用できる範囲）、失敗例、学び、限界 |
+| [07_vlm_comparison](notebooks/07_vlm_comparison.ipynb) | Phase7: 作るか借りるか。学習なしのVLM（ローカル・Claude）と自作を比較。書式を教える効果、「分からない」と言える自信、速度・コスト・プライバシー、併用 |
 
 - カーネルが無い場合: `.venv/bin/python -m ipykernel install --user --name plate_reader_lab --display-name "Python (plate_reader_lab)"`
 - 日本語フォントは macOS 標準のヒラギノ角ゴシックを使う（環境変数 `PLATE_FONT` で変更可）。
@@ -120,6 +123,8 @@ plate_reader_lab/
 │   ├── eval_phase4.py    # 振り分けの評価（しきい値の決め方・コスト・難易度の混ぜ方）
 │   ├── parking_sim/      # 入出庫シミュレーション: 料金・SQLite・照合方針・世界・AIで読む事象（Phase5 完成）
 │   ├── run_phase5.py     # 入出庫シミュレーションの本実験（4場面×4方針）
+│   ├── vlm/              # VLM（学習なし）との比較: プロンプト・解析・クライアント（Phase7 完成。ローカルのみ／Claude CLI）
+│   ├── run_phase7.py     # VLM比較の実行（ask=問い合わせ／report=集計）
 │   ├── plate_eval/       # 評価指標（IoU・CER・完全一致など）
 │   ├── eval_baseline.py  # ベースラインの評価（難易度別・失敗例の画像）
 │   ├── make_eval_sets.py # 固定シードの評価セットを生成
