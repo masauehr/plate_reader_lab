@@ -1,6 +1,6 @@
 # PLAN.md — plate_reader_lab
 
-作成日: 2026-10-14 / 状態: Phase0・Phase1完了、Phase2（検出）から着手
+作成日: 2026-10-14 / 状態: Phase0〜2完了、Phase3（OCR）から着手
 
 ## ゴール
 ナンバー風の**合成画像**を読み取り、駐車場の入出庫精算を行う**ミニシステム**を作り、次を学ぶ。
@@ -43,9 +43,12 @@
 - [x] 難易度別の精度を測り、**AIなしの限界**を把握する: `src/eval_baseline.py`、解説付き [notebooks/01_classical_baseline.ipynb](notebooks/01_classical_baseline.ipynb)。全体の完全一致 Easy 0.730 / Medium 0.122 / Hard 0.000（val 101枚目以降・各400枚）
 
 ### Phase2: 検出（物体検出）
-- [ ] 1画像1枚の板を前提に、位置を回帰するCNN（最小版）
-- [ ] 学習済み検出モデル（torchvision）の微調整（発展）
-- [ ] 指標: IoU、検出率
+- [x] 1画像1枚の板を前提に、**四隅（8個の数）を回帰するCNN**: 自作の小さなCNN／ImageNet学習済みResNet18（転移学習）。`src/ai_detect/`、`src/train_detector.py`、`src/run_phase2.sh`
+- [ ] 学習済み検出モデル（torchvision の Faster R-CNN 等）の微調整（発展・未実施）
+- [x] 指標: IoU、検出率（Det@0.5・Det@0.9）、四隅誤差(px)、検出→読み取りの完全一致
+- [x] 実験: モデル比較（小さなCNN 3回／ResNet18学習済み 3回／ResNet18学習済み重みなし 1回）、学習データの難易度（Easyだけ vs 全部、3回）
+- [x] 解説付き [notebooks/02_detection_cnn.ipynb](notebooks/02_detection_cnn.ipynb)、テスト24件
+- 結果: 検出率は全難易度でほぼ100%（古典的手法はHard 0.41）。ただし読み取りには**四隅誤差1〜2px以内**が必要で、ResNet18（学習済み）でEasy 0.94 / Medium 0.34 / Hard 0.00（全体の完全一致）。Hardは検出が成功してもOCRが読めない=**ボトルネックはOCRへ**
 
 ### Phase3: 文字認識（OCR）
 - [ ] 切り出した板の画像から文字列を読む CRNN＋CTC を学習
@@ -88,3 +91,4 @@
 - 2026-10-14: プロジェクト作成、md整備（README / CLAUDE / PLAN / MANUAL / DATA_SPEC / EVALUATION）
 - 2026-10-14: Phase0完了。合成データ生成器（plate_synth）、難易度3段階、固定シード評価セット4,500枚、テスト9件、解説付きNotebook 00 を作成
 - 2026-10-14: Phase1完了。古典的ベースライン（検出・OCR・評価・Notebook 01・テスト16件）。Easy 0.73／Medium 0.12／Hard 0.00。検出のIoUが0.9以上でないと読めない、事業用は検出0%など、AIなしの限界を把握
+- 2026-10-14: Phase2完了。四隅回帰CNN（小さなCNN／ResNet18転移学習）。検出率はほぼ100%（Hardでも0.99）だが、読み取りは四隅誤差に強く依存（1px未満で99%、3〜5pxで19%）。Easyだけの学習はMedium/Hardで崩れる（分布シフト）。AIは「板が無い」と言えない→Phase4の確信度へ
