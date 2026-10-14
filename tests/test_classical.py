@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from classical import detect_plate, read_text, rectify  # noqa: E402
 from classical.detect import fill_holes, label_components  # noqa: E402
-from plate_eval import cer, edit_distance, exact_match, iou  # noqa: E402
+from plate_eval import align_ops, cer, edit_distance, exact_match, iou  # noqa: E402
 from plate_synth import generate_sample, random_label, render_plate, split_seed  # noqa: E402
 
 
@@ -25,6 +25,20 @@ class TestMetrics(unittest.TestCase):
         self.assertAlmostEqual(cer("沖縄 300 あ 12-34", "沖縄 300 あ 12-34"), 0.0)
         self.assertAlmostEqual(cer("沖縄 300 あ 12-35", "沖縄 300 あ 12-34"), 1 / 11)   # 空白は無視して11文字
         self.assertTrue(exact_match("沖縄 300 あ 12-34", "沖縄300あ12-34"))
+
+
+class TestAlign(unittest.TestCase):
+    def test_align_ops(self):
+        self.assertEqual([o[0] for o in align_ops("123", "123")], ["match"] * 3)
+        self.assertEqual(align_ops("6", "8"), [("sub", "6", "8")])
+        ops = align_ops("沖縄300", "沖縄30")                      # 最後の「0」が脱落
+        self.assertEqual(sorted(o[0] for o in ops), ["del"] + ["match"] * 4)       # 2つの「0」のどちらが脱落かは、等価（同じ編集距離）
+        self.assertEqual([o for o in ops if o[0] == "del"], [("del", "0", None)])
+        ops = align_ops("12", "132")                              # 余分な「3」
+        self.assertEqual([o[0] for o in ops], ["match", "ins", "match"])
+        self.assertEqual(ops[1], ("ins", None, "3"))
+        n_err = sum(o[0] != "match" for o in align_ops("沖縄300あ12-34", "沖縄380あ12-3"))
+        self.assertEqual(n_err, edit_distance("沖縄300あ12-34", "沖縄380あ12-3"))     # 誤りの数は編集距離と一致
 
 
 class TestComponents(unittest.TestCase):

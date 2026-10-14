@@ -37,3 +37,27 @@ def exact_match(pred: str, gt: str) -> bool:
 def field_matches(pred: dict, gt: dict) -> dict:
     """フィールド（地名・分類番号・かな・一連番号）ごとの一致"""
     return {k: pred.get(k) == gt[k] for k in ("region", "class_no", "kana", "serial")}
+
+
+def align_ops(gt: str, pred: str) -> list[tuple]:
+    """正解と読み取りを、編集距離が最小になるように対応付ける（混同行列の材料）。
+    戻り値: [(操作, 正解の文字, 読んだ文字)]。操作は "match"（一致）/ "sub"（取り違え）/ "del"（脱落＝読めなかった）/ "ins"（余分に読んだ）"""
+    g, p = gt.replace(" ", ""), pred.replace(" ", "")
+    n, m = len(g), len(p)
+    d = [[0] * (m + 1) for _ in range(n + 1)]
+    for i in range(n + 1):
+        d[i][0] = i
+    for j in range(m + 1):
+        d[0][j] = j
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            d[i][j] = min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (g[i - 1] != p[j - 1]))
+    ops, i, j = [], n, m
+    while i > 0 or j > 0:
+        if i > 0 and j > 0 and d[i][j] == d[i - 1][j - 1] + (g[i - 1] != p[j - 1]):
+            ops.append(("match" if g[i - 1] == p[j - 1] else "sub", g[i - 1], p[j - 1])); i -= 1; j -= 1
+        elif i > 0 and d[i][j] == d[i - 1][j] + 1:
+            ops.append(("del", g[i - 1], None)); i -= 1
+        else:
+            ops.append(("ins", None, p[j - 1])); j -= 1
+    return ops[::-1]
