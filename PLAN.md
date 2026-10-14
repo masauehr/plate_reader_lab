@@ -1,6 +1,6 @@
 # PLAN.md — plate_reader_lab
 
-作成日: 2026-10-14 / 状態: 計画のみ（コード未実装）
+作成日: 2026-10-14 / 状態: Phase0（合成データ生成器）完了、Phase1から着手
 
 ## ゴール
 ナンバー風の**合成画像**を読み取り、駐車場の入出庫精算を行う**ミニシステム**を作り、次を学ぶ。
@@ -30,12 +30,12 @@
 ## フェーズ
 
 ### Phase0: 環境・合成データ生成器
-- [ ] `.venv` 作成、依存インストール（[requirements.txt](requirements.txt)）
-- [ ] 日本語フォントの確認（macOS標準フォントを想定。再配布しない）
-- [ ] ナンバー板の画像生成（地名・分類番号・かな・一連番号、色の種別）→ [DATA_SPEC.md](DATA_SPEC.md)
-- [ ] 背景・変形・劣化を加えた「シーン画像」の生成、正解ラベル（位置・文字）の自動出力
-- [ ] 難易度（Easy / Medium / Hard）の定義と、固定シードの評価セット生成
-- [ ] 生成画像を目で確認するNotebook
+- [x] `.venv` 作成、依存インストール（[requirements.txt](requirements.txt)。torch 2.14.1 / Pillow 12.3.0）
+- [x] 日本語フォントの確認（ヒラギノ角ゴシック W6。再配布しない）
+- [x] ナンバー板の画像生成（地名・分類番号・かな・一連番号、4種別の色）→ [DATA_SPEC.md](DATA_SPEC.md)
+- [x] 背景・変形・劣化を加えた「シーン画像」の生成、正解ラベル（位置・文字）の自動出力: `src/plate_synth/`
+- [x] 難易度（Easy / Medium / Hard）の定義と、固定シードの評価セット生成: `src/make_eval_sets.py`（val 500 / test 1,000 枚 × 3難易度）。テスト9件: `tests/`
+- [x] 生成画像を目で確認するNotebook: [notebooks/00_synth_data.ipynb](notebooks/00_synth_data.ipynb)
 
 ### Phase1: 非AIのベースライン
 - [ ] 古典的な画像処理（色・矩形・輪郭）でナンバー板を検出
@@ -75,7 +75,7 @@
 - [ ] ※ 合成画像のみなので、外部サービスに送っても個人情報の問題はない（実画像では送らない）
 
 ### Notebook化
-- [ ] 各フェーズを、初心者向けの解説付きNotebookにする（`image_augment_lab` の方式）
+- [ ] 各フェーズを、初心者向けの解説付きNotebookにする（`image_augment_lab` の方式）。Phase0 は完了（`notebooks/00_synth_data.ipynb`）
 
 ## 未決事項
 - 検出の手法: 最小のCNN回帰から始めて、torchvisionの検出モデルまで進めるか
@@ -86,3 +86,4 @@
 
 ## 進捗ログ
 - 2026-10-14: プロジェクト作成、md整備（README / CLAUDE / PLAN / MANUAL / DATA_SPEC / EVALUATION）
+- 2026-10-14: Phase0完了。合成データ生成器（plate_synth）、難易度3段階、固定シード評価セット4,500枚、テスト9件、解説付きNotebook 00 を作成

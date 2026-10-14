@@ -22,6 +22,14 @@
 - 生成データは固定シードで再現できるようにし、画像ファイルそのものはgit管理しない。
 - 新しい知見・失敗の原因は [MANUAL.md](MANUAL.md) に追記して蓄積する。
 
+## Notebook
+- `notebooks/` の学習用Notebookは、**初心者向け**に書く（冒頭に「ゴール・やること・キーワード」、各コードの前に目的、後に出力の見方、「試してみよう」は変更する場所・値・見るポイント・分かることまで具体的に）。
+- Notebookは**出力を消した状態でコミット**する。実行確認は別の出力先で行う（`jupyter nbconvert --execute --output-dir ...`）。
+- カーネルは「Python (plate_reader_lab)」。
+
+## テスト
+- 生成器の変更後は `.venv/bin/python -m unittest discover -s tests` を実行する（再現性・ラベルの正しさ・シード範囲の分離などを確認する）。
+
 ## 技術スタック
 - Python 3.x / PyTorch / torchvision / Pillow / numpy / pandas / matplotlib / Jupyter / SQLite（標準ライブラリ `sqlite3`）
 - 実行環境は CPU または Apple Silicon（MPS）。GPU前提にしない。長時間学習・大きなダウンロードは事前にユーザーに確認する。
