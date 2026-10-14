@@ -43,13 +43,16 @@ def generate_sample(seed: int, difficulty: str = "easy", overrides: dict | None 
     return Sample(img, label, plate)
 
 
-def make_eval_set(root: Path, split: str, difficulty: str, n: int) -> Path:
-    """固定シードの評価セットを root/split/difficulty/ に書き出す（画像PNG＋labels.jsonl）"""
-    out = Path(root) / split / difficulty
+def make_eval_set(root: Path, split: str, difficulty: str, n: int, start: int = 0, out_split: str | None = None) -> Path:
+    """固定シードの評価セットを root/(out_split または split)/difficulty/ に書き出す（画像PNG＋labels.jsonl）。
+    start番目から n 枚。シードは split の範囲から取る（例: split="val", start=500 → valの500番目以降＝しきい値決定用の較正セット）"""
+    if n <= 0:
+        raise ValueError("n は1以上にしてください（0だと既存のlabels.jsonlを空で上書きしてしまう）")
+    out = Path(root) / (out_split or split) / difficulty
     (out / "images").mkdir(parents=True, exist_ok=True)
     with open(out / "labels.jsonl", "w", encoding="utf-8") as f:
         for i in range(n):
-            s = generate_sample(split_seed(split, difficulty, i), difficulty)
+            s = generate_sample(split_seed(split, difficulty, start + i), difficulty)
             name = f"{i:05d}.png"
             s.image.save(out / "images" / name)          # PNGで保存（再圧縮を避ける）
             f.write(json.dumps({"image": name, **s.label}, ensure_ascii=False) + "\n")

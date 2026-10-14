@@ -37,15 +37,17 @@
 
 ## 現状と使い方
 
-**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）完了。** 以降は [PLAN.md](PLAN.md) の Phase4（ルール補正・確信度・要確認）から。
+**Phase0（合成データ生成器）・Phase1（非AIのベースライン）・Phase2（学習する検出器）・Phase3（学習する文字認識）・Phase4（ルール補正・確信度・要確認）完了。** 以降は [PLAN.md](PLAN.md) の Phase5（入出庫シミュレーション）から。
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（32件）
+.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・検出器・評価指標のテスト（49件）
 .venv/bin/python src/make_eval_sets.py             # 評価セット4,500枚を data/eval/ に生成（約45秒）
 .venv/bin/python src/eval_baseline.py             # 古典的ベースラインの評価（約20秒）→ outputs/baseline/
 .venv/bin/python src/train_detector.py --model resnet18 --epochs 20   # 検出器の学習（約9分。run_phase2.shで本実験を一括）
 .venv/bin/python src/train_ocr.py                                    # OCR(CRNN+CTC)の学習（約10分。run_phase3.shで本実験を一括。先に検出器が必要）
+.venv/bin/python src/make_eval_sets.py --val 0 --test 0 --cal 1000   # 較正セット（しきい値決定用）を追加で作る
+.venv/bin/python src/eval_phase4.py                  # 書式検査・確信度・振り分けの評価（約1分。先にPhase2・3の学習が必要）
 .venv/bin/jupyter lab notebooks/                   # 解説付きNotebook（カーネル: Python (plate_reader_lab)）
 ```
 
@@ -62,6 +64,7 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 | [01_classical_baseline](notebooks/01_classical_baseline.ipynb) | Phase1: 「AIなし」でどこまで読めるか。検出と文字認識を1段階ずつ見て、難易度別に測り、失敗の原因を分析する |
 | [02_detection_cnn](notebooks/02_detection_cnn.ipynb) | Phase2: 「例から学ぶAI」で板の四隅を見つける。その場で生成する学習、古典的手法との比較、四隅誤差と読み取りの関係、転移学習、分布シフト、「板が無い」と言えない問題 |
 | [03_ocr_crnn](notebooks/03_ocr_crnn.ipynb) | Phase3: 「例から読み方を学ぶAI」(CRNN+CTC)。板を1行にする、CTCの仕組みと「位置は対応しない」発見、四隅の誤差の混ぜ方、分布シフト、読み間違いの分析、確信度の予告、左右反転がダメな理由 |
+| [04_rules_confidence](notebooks/04_rules_confidence.ipynb) | Phase4: AIは間違える前提で作る。書式検査（弾く）・補正（効果ほぼゼロ）・確信度4通り・自動処理／要確認／読み取り不可の振り分け・カバレッジ曲線・しきい値の決め方（データ量・コスト）・残る誤り |
 
 - カーネルが無い場合: `.venv/bin/python -m ipykernel install --user --name plate_reader_lab --display-name "Python (plate_reader_lab)"`
 - 日本語フォントは macOS 標準のヒラギノ角ゴシックを使う（環境変数 `PLATE_FONT` で変更可）。
@@ -106,6 +109,8 @@ plate_reader_lab/
 │   ├── train_detector.py # 検出器の学習 ／ run_phase2.sh（本実験の一括実行）
 │   ├── ai_ocr/           # 学習する文字認識: model（CRNN+CTC）/ data（板を1行に・四隅の誤差を混ぜる）/ evaluate（Phase3 完成）
 │   ├── train_ocr.py      # OCRの学習 ／ run_phase3.sh（本実験の一括実行）
+│   ├── rules/            # 書式検査・補正・確信度（4通り）・振り分け・カバレッジ曲線（Phase4 完成）
+│   ├── eval_phase4.py    # 振り分けの評価（しきい値の決め方・コスト・難易度の混ぜ方）
 │   ├── plate_eval/       # 評価指標（IoU・CER・完全一致など）
 │   ├── eval_baseline.py  # ベースラインの評価（難易度別・失敗例の画像）
 │   ├── make_eval_sets.py # 固定シードの評価セットを生成
