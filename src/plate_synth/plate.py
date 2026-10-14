@@ -72,3 +72,31 @@ def render_plate(label: dict, rng: np.random.Generator | None = None) -> Image.I
         _draw_chars(d, ch, x, bot_cy + 2, s_ser, adv, fg)
         x += adv
     return im
+
+
+# ---------------------------------------------------------------------------
+# 文字セルの標準配置（古典的OCRが「板の書式」として手で持つ知識。描画ロジックと同じ式）
+# ---------------------------------------------------------------------------
+def nominal_cells(serial_has_hyphen: bool) -> list[dict]:
+    """ばらつきなしの標準配置で、各文字セルの中心(cx, cy)・文字の大きさ・幅(adv)を返す。
+
+    serial_has_hyphen=True なら一連番号は「ab-cd」（5セル）、False なら「・・12」など4セル。
+    """
+    cells = []
+    s, adv, x0, cy = 46, 46 * 0.98, 30, 56
+    for i in range(2):
+        cells.append(dict(field="region", idx=i, cx=x0 + adv * (i + 0.5), cy=cy, size=s, adv=adv))
+    s, adv, cy = 60, 60 * 0.62, 58
+    x0 = PLATE_W - 30 - adv * 3
+    for i in range(3):
+        cells.append(dict(field="class_no", idx=i, cx=x0 + adv * (i + 0.5), cy=cy, size=s, adv=adv))
+    cells.append(dict(field="kana", idx=0, cx=28 + 62 * 0.5, cy=138, size=62, adv=62.0))
+    s = 104
+    adv_d, adv_h = s * 0.56, s * 0.36
+    widths = [adv_d, adv_d, adv_h, adv_d, adv_d] if serial_has_hyphen else [adv_d] * 4
+    x = PLATE_W - 24 - sum(widths)
+    for i, w in enumerate(widths):
+        cells.append(dict(field="serial", idx=i, cx=x + w / 2, cy=140, size=s, adv=w,
+                          slot="hyphen" if (serial_has_hyphen and i == 2) else "digit"))
+        x += w
+    return cells

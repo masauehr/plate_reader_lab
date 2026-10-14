@@ -37,12 +37,13 @@
 
 ## 現状と使い方
 
-**Phase0（合成データ生成器）完了。** 以降は [PLAN.md](PLAN.md) の Phase1（非AIのベースライン）から。
+**Phase0（合成データ生成器）・Phase1（非AIのベースライン）完了。** 以降は [PLAN.md](PLAN.md) の Phase2（検出）から。
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest discover -s tests     # 生成器のテスト（9件）
+.venv/bin/python -m unittest discover -s tests     # 生成器・ベースライン・評価指標のテスト（16件）
 .venv/bin/python src/make_eval_sets.py             # 評価セット4,500枚を data/eval/ に生成（約45秒）
+.venv/bin/python src/eval_baseline.py             # 古典的ベースラインの評価（約20秒）→ outputs/baseline/
 .venv/bin/jupyter lab notebooks/                   # 解説付きNotebook（カーネル: Python (plate_reader_lab)）
 ```
 
@@ -56,6 +57,7 @@ s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 | Notebook | 内容 |
 |---|---|
 | [00_synth_data](notebooks/00_synth_data.ipynb) | Phase0: 合成データを「作る」。プレート4種、正解ラベル、背景、劣化を1つずつ、難易度3段階、再現性、データ分割 |
+| [01_classical_baseline](notebooks/01_classical_baseline.ipynb) | Phase1: 「AIなし」でどこまで読めるか。検出と文字認識を1段階ずつ見て、難易度別に測り、失敗の原因を分析する |
 
 - カーネルが無い場合: `.venv/bin/python -m ipykernel install --user --name plate_reader_lab --display-name "Python (plate_reader_lab)"`
 - 日本語フォントは macOS 標準のヒラギノ角ゴシックを使う（環境変数 `PLATE_FONT` で変更可）。
@@ -95,6 +97,9 @@ plate_reader_lab/
 ├── notebooks/   # 解説付き学習Notebook（フェーズごと）
 ├── src/
 │   ├── plate_synth/      # 合成データ生成器（Phase0 完成）
+│   ├── classical/        # 古典的ベースライン: detect（検出）/ ocr（文字認識）/ pipeline（Phase1 完成）
+│   ├── plate_eval/       # 評価指標（IoU・CER・完全一致など）
+│   ├── eval_baseline.py  # ベースラインの評価（難易度別・失敗例の画像）
 │   ├── make_eval_sets.py # 固定シードの評価セットを生成
 │   └── （detect / ocr / rules / parking_sim / eval は今後）
 └── tests/       # 生成器のテスト

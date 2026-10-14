@@ -1,6 +1,6 @@
 # PLAN.md — plate_reader_lab
 
-作成日: 2026-10-14 / 状態: Phase0（合成データ生成器）完了、Phase1から着手
+作成日: 2026-10-14 / 状態: Phase0・Phase1完了、Phase2（検出）から着手
 
 ## ゴール
 ナンバー風の**合成画像**を読み取り、駐車場の入出庫精算を行う**ミニシステム**を作り、次を学ぶ。
@@ -38,9 +38,9 @@
 - [x] 生成画像を目で確認するNotebook: [notebooks/00_synth_data.ipynb](notebooks/00_synth_data.ipynb)
 
 ### Phase1: 非AIのベースライン
-- [ ] 古典的な画像処理（色・矩形・輪郭）でナンバー板を検出
-- [ ] テンプレートマッチ等で文字を読む
-- [ ] 難易度別の精度を測り、**AIなしの限界**を把握する
+- [x] 古典的な画像処理（明るく色の薄い領域→クロージング・穴埋め→連結成分→縦横比・埋まり率・インク・緑がかりで採点）でナンバー板を検出: `src/classical/detect.py`（numpy+Pillowのみで自作）
+- [x] テンプレートマッチ（標準セル配置×見本文字×±3pxずらし、正規化相互相関）で文字を読む: `src/classical/ocr.py`
+- [x] 難易度別の精度を測り、**AIなしの限界**を把握する: `src/eval_baseline.py`、解説付き [notebooks/01_classical_baseline.ipynb](notebooks/01_classical_baseline.ipynb)。全体の完全一致 Easy 0.730 / Medium 0.122 / Hard 0.000（val 101枚目以降・各400枚）
 
 ### Phase2: 検出（物体検出）
 - [ ] 1画像1枚の板を前提に、位置を回帰するCNN（最小版）
@@ -87,3 +87,4 @@
 ## 進捗ログ
 - 2026-10-14: プロジェクト作成、md整備（README / CLAUDE / PLAN / MANUAL / DATA_SPEC / EVALUATION）
 - 2026-10-14: Phase0完了。合成データ生成器（plate_synth）、難易度3段階、固定シード評価セット4,500枚、テスト9件、解説付きNotebook 00 を作成
+- 2026-10-14: Phase1完了。古典的ベースライン（検出・OCR・評価・Notebook 01・テスト16件）。Easy 0.73／Medium 0.12／Hard 0.00。検出のIoUが0.9以上でないと読めない、事業用は検出0%など、AIなしの限界を把握
