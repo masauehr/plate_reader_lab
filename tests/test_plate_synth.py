@@ -83,7 +83,7 @@ class TestPlateSynth(unittest.TestCase):
     def test_split_seeds_do_not_overlap(self):
         """train/val/test と難易度のシード範囲が重ならない（データリーク防止）"""
         ranges = []
-        for sp in ("train", "val", "test"):
+        for sp in ("train", "val", "test", "sim"):
             for d in DIFFICULTIES:
                 lo = split_seed(sp, d, 0)
                 ranges.append((lo, lo + SEED_STRIDE - 1))

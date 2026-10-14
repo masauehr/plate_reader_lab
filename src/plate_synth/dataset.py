@@ -20,10 +20,12 @@ class Sample:
 
 
 def generate_sample(seed: int, difficulty: str = "easy", overrides: dict | None = None,
-                    plate_type: str = "private") -> Sample:
-    """シードと難易度から、シーン画像と正解ラベルを1つ作る。同じ引数なら必ず同じ結果"""
+                    plate_type: str = "private", label: dict | None = None) -> Sample:
+    """シードと難易度から、シーン画像と正解ラベルを1つ作る。同じ引数なら必ず同じ結果。
+    label を渡すと、そのナンバーの板を撮った画像になる（同じ車を、別の条件で撮り直す用途。乱数の進み方は変えない）"""
     rng = np.random.default_rng(seed)
-    label = random_label(rng, plate_type)
+    drawn = random_label(rng, plate_type)                 # 乱数を進めるために、必ず引く
+    label = dict(label) if label is not None else drawn
     plate = render_plate(label, rng)
     p = sample_params(difficulty, rng, overrides)
 

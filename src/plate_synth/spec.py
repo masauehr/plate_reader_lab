@@ -22,7 +22,7 @@ SCENE_W, SCENE_H = 320, 240
 DIFFICULTIES = ["easy", "medium", "hard"]
 
 # データ分割のシード範囲。重ならないようにベースを離す（難易度ごとに10万ずつ）
-SEED_BASE = {"train": 1_000_000, "val": 2_000_000, "test": 3_000_000}
+SEED_BASE = {"train": 1_000_000, "val": 2_000_000, "test": 3_000_000, "sim": 4_000_000}   # sim: 入出庫シミュレーション用（Phase5）
 SEED_STRIDE = 100_000
 
 

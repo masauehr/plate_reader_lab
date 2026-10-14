@@ -118,6 +118,9 @@
 - すべての生成は**シード**で制御し、設定（難易度のパラメータ）とともに記録する。
 - 生成画像そのものは**git管理しない**（`data/`、`.gitignore` で除外）。同じコードとシードで再生成できる。
 
+## 9-1. シミュレーション用のシード（Phase5）
+- `sim`（400万〜）: 入出庫シミュレーション用の画像。同じ車（ナンバー）を、入庫・出庫で別の条件で撮るため、`generate_sample(seed, difficulty, label=...)` で**ナンバーを指定**して生成する（乱数の進み方は変えないので、`label` を渡さない場合の既存の画像は変わらない）。train/val/test とシードが重ならない。
+
 ## 9-2. 実装メモ（Phase0）
 - 実装: `src/plate_synth/`（`spec` 定数／`fonts` フォント検出／`plate` プレート描画／`scene` 背景・透視変換／`degrade` 劣化／`difficulty` 難易度／`dataset` 生成・評価セット／`viz` 確認用描画）。
 - 使い方: `generate_sample(seed, difficulty, overrides)` が、シーン画像・正解ラベル・きれいなプレート画像を返す。
