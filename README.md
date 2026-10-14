@@ -63,6 +63,8 @@ s.image    # シーン画像（PIL, 320×240）
 s.label    # 正解ラベル（板の位置・文字・劣化の強さなど）
 ```
 
+各Notebookの**実行結果（図・表・読み取れること・演習）のまとめ**は [notebooks/README.md](notebooks/README.md) にある（Notebookを開く前の予習・実行後の答え合わせに使える）。
+
 | Notebook | 内容 |
 |---|---|
 | [00_synth_data](notebooks/00_synth_data.ipynb) | Phase0: 合成データを「作る」。プレート4種、正解ラベル、背景、劣化を1つずつ、難易度3段階、再現性、データ分割 |
