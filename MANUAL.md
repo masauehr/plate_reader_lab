@@ -659,3 +659,8 @@ AIの読み取り結果を、**ルールで検査・補正**する。これは�
 - CRNN: Shi et al., "An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene Text Recognition", 2015
 - CTC: Graves et al., "Connectionist Temporal Classification", 2006
 - 関連: [ai_core の CASE_STUDIES.md](../ai_core/CASE_STUDIES.md)（駐車場システムの分解）、[image_augment_lab の MANUAL.md](../image_augment_lab/MANUAL.md)（拡張・評価の考え方）
+
+### Notebookの入口（初心者向けの基礎知識）
+- **最初に [notebooks/00_basics.ipynb](notebooks/00_basics.ipynb) を読む**（2026-10-15追加）。予備知識ゼロから、題材の基礎知識・小さな実験（コード）・用語集・読む順・結果の読み方の心得をまとめてある。
+- 各Notebookの冒頭（タイトルの直後）に「🔰 やさしい導入」を追加した（ひとことで言うと／たとえ話／先に読む節／難しければ「出力の見方」だけ読めばよい）。
+- 方針: 新しいNotebookを作るときも、冒頭に「やさしい導入」を置き、用語は `00_basics` の用語集に追記する。

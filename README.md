@@ -138,3 +138,6 @@ plate_reader_lab/
 
 - [ai_core](../ai_core/README.md) — AI全体の地図。事例分解は [CASE_STUDIES.md](../ai_core/CASE_STUDIES.md)、このプロジェクトの位置づけは [PLAN.md](../ai_core/PLAN.md)
 - [image_augment_lab](../image_augment_lab/README.md) — 画像のデータ拡張・転移学習。**拡張の知見を応用**する（ただし**左右反転は文字が鏡像になるため禁止**。「ラベルを壊す拡張は使えない」の実例）。次のステップ「予測・検証システム化」とも合流する
+
+## Notebook を読むとき
+はじめての方は、まず [notebooks/00_basics.ipynb](notebooks/00_basics.ipynb)（基礎知識・用語集・読む順）から。各Notebookの冒頭には「やさしい導入」があります。
